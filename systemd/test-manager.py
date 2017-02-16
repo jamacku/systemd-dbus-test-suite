@@ -131,8 +131,45 @@ class TestManager(avocado.Test):
         manager_id = self.manager.GetMachineId()
         self.assertEqual(id, manager_id)
 
-    # def test_Get(self):
-    #     self.fail()
+    def test_Get(self):
+        """ Test Get() on basic manager properties.
+        """
+        p = self.manager.Get("org.freedesktop.systemd1.Manager", "Version")
+        # Version is the second word on the first line in the output.
+        v = subprocess.check_output(["systemctl", "--version"]).split('\n')[0].split()[1]
+        self.assertEqual(p, v)
+
+        config = {"LogLevel": "info",
+                  "LogTarget": "journal-or-kmsg"}
+        for (prop, val) in config.iteritems():
+            p = self.manager.Get("org.freedesktop.systemd1.Manager", prop)
+            self.assertEqual(p, val)
+
+        for prop in ["DefaultLimitCPU",
+                     "DefaultLimitFSIZE",
+                     "DefaultLimitDATA",
+                     "DefaultLimitSTACK",
+                     "DefaultLimitCORE",
+                     "DefaultLimitRSS",
+                     "DefaultLimitAS",
+                     "DefaultLimitLOCKS",
+                     "DefaultLimitRTTIME"]:
+            p = self.manager.Get("org.freedesktop.systemd1.Manager", prop)
+            l = 2 ** 64 - 1
+            self.assertEqual(p, l)
+
+        # jsynacek: If there's a good way to read these values instead of hard-coding them, we
+        #           should do that.
+        config = {"DefaultLimitNOFILE": 4096,
+                  "DefaultLimitNPROC": 47201,
+                  "DefaultLimitMEMLOCK": 65536,
+                  "DefaultLimitSIGPENDING": 47201,
+                  "DefaultLimitMSGQUEUE": 819200,
+                  "DefaultLimitRTPRIO": 0}
+        for (prop, val) in config.iteritems():
+            p = self.manager.Get("org.freedesktop.systemd1.Manager", prop)
+            self.assertEqual(p, val)
+
 
     def test_GetUnitByPID(self):
         temp = tempfile.mktemp()
