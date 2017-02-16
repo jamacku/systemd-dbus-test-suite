@@ -85,26 +85,26 @@ FOLLOWING TESTS BREAK F25. UNCOMMENT THEM ONCE WE BACKPORT FIX for #4444
         self.assertEqual(len(jobs), 0)
 '''
 
-    def test_DisableUnitFiles(self):
-        self.fail()
+    # def test_DisableUnitFiles(self):
+    #     self.fail()
 
-    def test_Dump(self):
-        self.fail()
+    # def test_Dump(self):
+    #     self.fail()
 
-    def test_EnableUnitFiles(self):
-        self.fail()
+    # def test_EnableUnitFiles(self):
+    #     self.fail()
 
-    def test_Exit(self):
-        self.fail()
+    # def test_Exit(self):
+    #     self.fail()
 
-    def test_GetAll(self):
-        self.fail()
+    # def test_GetAll(self):
+    #     self.fail()
 
-    def test_GetDefaultTarget(self):
-        self.fail()
+    # def test_GetDefaultTarget(self):
+    #     self.fail()
 
-    def test_GetJob(self):
-        self.fail()
+    # def test_GetJob(self):
+    #     self.fail()
 
     def test_GetMachineId(self):
         with open('/etc/machine-id', 'r') as f:
@@ -113,161 +113,161 @@ FOLLOWING TESTS BREAK F25. UNCOMMENT THEM ONCE WE BACKPORT FIX for #4444
         manager_id = self.manager.GetMachineId()
         self.assertEqual(id, manager_id)
 
-    def test_Get(self):
-        self.fail()
+    # def test_Get(self):
+    #     self.fail()
 
-    def test_GetUnitByPID(self):
-        self.fail()
+    # def test_GetUnitByPID(self):
+    #     self.fail()
 
-    def test_GetUnitFileState(self):
-        self.fail()
+    # def test_GetUnitFileState(self):
+    #     self.fail()
 
-    def test_GetUnit(self):
-        self.fail()
+    # def test_GetUnit(self):
+    #     self.fail()
 
-    def test_GetUnitProcesses(selfelf):
-        self.fail()
+    # def test_GetUnitProcesses(selfelf):
+    #     self.fail()
 
-    def test_Halt(self):
-        self.fail()
+    # def test_Halt(self):
+    #     self.fail()
 
-    def test_Introspect(self):
-        self.fail()
+    # def test_Introspect(self):
+    #     self.fail()
 
-    def test_KExec(self):
-        self.fail()
+    # def test_KExec(self):
+    #     self.fail()
 
-    def test_KillUnit(self):
-        self.fail()
+    # def test_KillUnit(self):
+    #     self.fail()
 
-    def test_LinkUnitFiles(self):
-        self.fail()
+    # def test_LinkUnitFiles(self):
+    #     self.fail()
 
-    def test_ListJobs(self):
-        self.fail()
+    # def test_ListJobs(self):
+    #     self.fail()
 
-    def test_ListUnitFilesByPatterns(self):
-        self.fail()
+    # def test_ListUnitFilesByPatterns(self):
+    #     self.fail()
 
-    def test_ListUnitFiles(self):
-        self.fail()
+    # def test_ListUnitFiles(self):
+    #     self.fail()
 
-    def test_ListUnitsByNames(self):
-        self.fail()
+    # def test_ListUnitsByNames(self):
+    #     self.fail()
 
-    def test_ListUnitsByPatterns(self):
-        self.fail()
+    # def test_ListUnitsByPatterns(self):
+    #     self.fail()
 
-    def test_ListUnitsFiltered(self):
-        self.fail()
+    # def test_ListUnitsFiltered(self):
+    #     self.fail()
 
-    def test_ListUnits(self):
-        self.fail()
+    # def test_ListUnits(self):
+    #     self.fail()
 
-    def test_LoadUnit(self):
-        self.fail()
+    # def test_LoadUnit(self):
+    #     self.fail()
 
-    def test_MaskUnitFiles(self):
-        self.fail()
+    # def test_MaskUnitFiles(self):
+    #     self.fail()
 
     def test_Ping(self):
         self.manager.Ping()
 
-    def test_PowerOff(self):
-        self.fail()
+    # def test_PowerOff(self):
+    #     self.fail()
 
-    def test_PresetAllUnitFiles(self):
-        self.fail()
+    # def test_PresetAllUnitFiles(self):
+    #     self.fail()
 
-    def test_PresetUnitFiles(self):
-        self.fail()
+    # def test_PresetUnitFiles(self):
+    #     self.fail()
 
-    def test_PresetUnitFilesWithMode(self):
-        self.fail()
+    # def test_PresetUnitFilesWithMode(self):
+    #     self.fail()
 
-    def test_Reboot(selfelf):
-        self.fail()
+    # def test_Reboot(selfelf):
+    #     self.fail()
 
-    def test_ReenableUnitFiles(self):
-        self.fail()
+    # def test_ReenableUnitFiles(self):
+    #     self.fail()
 
-    def test_Reexecute(self):
-        self.fail()
+    # def test_Reexecute(self):
+    #     self.fail()
 
-    def test_Reload(self):
-        self.fail()
+    # def test_Reload(self):
+    #     self.fail()
 
-    def test_ReloadOrRestartUnit(self):
-        self.fail()
+    # def test_ReloadOrRestartUnit(self):
+    #     self.fail()
 
-    def test_ReloadOrTryRestartUnit(self):
-        self.fail()
+    # def test_ReloadOrTryRestartUnit(self):
+    #     self.fail()
 
-    def test_ReloadUnit(self):
-        self.fail()
+    # def test_ReloadUnit(self):
+    #     self.fail()
 
-    def test_RemoveSnapshot(self):
-        self.fail()
+    # def test_RemoveSnapshot(self):
+    #     self.fail()
 
-    def test_ResetFailed(self):
-        self.fail()
+    # def test_ResetFailed(self):
+    #     self.fail()
 
-    def test_ResetFailedUnit(self):
-        self.fail()
+    # def test_ResetFailedUnit(self):
+    #     self.fail()
 
-    def test_RestartUnit(self):
-        self.fail()
+    # def test_RestartUnit(self):
+    #     self.fail()
 
-    def test_RevertUnitFiles(self):
-        self.fail()
+    # def test_RevertUnitFiles(self):
+    #     self.fail()
 
-    def test_SetDefaultTarget(self):
-        self.fail()
+    # def test_SetDefaultTarget(self):
+    #     self.fail()
 
-    def test_SetEnvironment(self):
-        self.fail()
+    # def test_SetEnvironment(self):
+    #     self.fail()
 
-    def test_SetExitCode(self):
-        self.fail()
+    # def test_SetExitCode(self):
+    #     self.fail()
 
-    def test_Set(self):
-        self.fail()
+    # def test_Set(self):
+    #     self.fail()
 
-    def test_SetUnitProperties(self):
-        self.fail()
+    # def test_SetUnitProperties(self):
+    #     self.fail()
 
-    def test_StartTransientUnit(self):
-        self.fail()
+    # def test_StartTransientUnit(self):
+    #     self.fail()
 
-    def test_StartUnit(self):
-        self.fail()
+    # def test_StartUnit(self):
+    #     self.fail()
 
-    def test_StartUnitReplace(self):
-        self.fail()
+    # def test_StartUnitReplace(self):
+    #     self.fail()
 
-    def test_StopUnit(self):
-        self.fail()
+    # def test_StopUnit(self):
+    #     self.fail()
 
-    def test_Subscribe(self):
-        self.fail()
+    # def test_Subscribe(self):
+    #     self.fail()
 
-    def test_SwitchRoot(self):
-        self.skip()
+    # def test_SwitchRoot(self):
+    #     self.skip()
 
-    def test_TryRestartUnit(self):
-        self.fail()
+    # def test_TryRestartUnit(self):
+    #     self.fail()
 
-    def test_UnmaskUnitFiles(self):
-        self.fail()
+    # def test_UnmaskUnitFiles(self):
+    #     self.fail()
 
-    def test_UnsetAndSetEnvironment(self):
-        self.fail()
+    # def test_UnsetAndSetEnvironment(self):
+    #     self.fail()
 
-    def test_UnsetEnvironment(self):
-        self.fail()
+    # def test_UnsetEnvironment(self):
+    #     self.fail()
 
-    def test_Unsubscribe(self):
-        self.fail()
+    # def test_Unsubscribe(self):
+    #     self.fail()
 
     def tearDown(self):
         try:
