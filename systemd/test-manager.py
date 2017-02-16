@@ -192,8 +192,38 @@ class TestManager(avocado.Test):
         self.log.debug(job)
         os.remove(temp)
 
-    # def test_GetUnitFileState(self):
-    #     self.fail()
+    def test_GetUnitFileState(self):
+        TARGET = 'multi-user.target'
+
+        with open(self.unit_file, 'w') as u:
+             u.write('[Service]\n')
+             u.write('ExecStart=/bin/true\n')
+
+        self.manager.Reload()
+
+        # unit file doesn't have [Install] section, hence it should be marked as static
+        state = self.manager.GetUnitFileState(self.unit)
+        self.assertEqual(state, 'static')
+
+        # after we add wants dependency to multi-user.target it should be marked as enabled
+        self.manager.AddDependencyUnitFiles([self.unit], TARGET, 'Wants', False, False)
+        state = self.manager.GetUnitFileState(self.unit)
+        self.assertEqual(state, 'enabled')
+
+        # when we disable the unit, then state should be again static
+        self.manager.DisableUnitFiles([self.unit], False)
+        state = self.manager.GetUnitFileState(self.unit)
+        self.assertEqual(state, 'static')
+
+        with open(self.unit_file, 'a') as u:
+             u.write('[Install]\n')
+             u.write('WantedBy=multi-user.target\n')
+
+        self.manager.Reload()
+
+        # we added [Install] section but unit file is not enabled
+        state = self.manager.GetUnitFileState(self.unit)
+        self.assertEqual(state, 'disabled')
 
     # def test_GetUnit(self):
     #     self.fail()
