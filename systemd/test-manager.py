@@ -86,7 +86,7 @@ FOLLOWING TESTS BREAK F25. UNCOMMENT THEM ONCE WE BACKPORT FIX for #4444
 '''
 
     def test_DisableUnitFiles(self):
-        pass
+        self.fail()
 
     def test_Dump(self):
         self.fail()
