@@ -162,9 +162,11 @@ class TestManager(avocado.Test):
         config = {"DefaultLimitNOFILE": resource.getrlimit(resource.RLIMIT_NOFILE)[1],
                   "DefaultLimitNPROC": resource.getrlimit(resource.RLIMIT_NPROC)[1],
                   "DefaultLimitMEMLOCK": resource.getrlimit(resource.RLIMIT_MEMLOCK)[1],
-                  "DefaultLimitSIGPENDING": 47201,
-                  "DefaultLimitMSGQUEUE": 819200,
-                  "DefaultLimitRTPRIO": 0}
+                  # The following limits don't have symbolic values in Python 2.7.
+                  # Use the ones from /usr/include/bits/resource.h.
+                  "DefaultLimitSIGPENDING": resource.getrlimit(11)[1],
+                  "DefaultLimitMSGQUEUE": resource.getrlimit(12)[1],
+                  "DefaultLimitRTPRIO": resource.getrlimit(14)[1]}
         for (prop, val) in config.iteritems():
             p = self.manager.Get("org.freedesktop.systemd1.Manager", prop)
             self.assertEqual(p, val)
