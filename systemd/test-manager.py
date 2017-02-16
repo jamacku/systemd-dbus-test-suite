@@ -73,7 +73,7 @@ class TestManager(avocado.Test):
     def test_ClearJobs(self):
         with open(self.unit_file, 'w') as u:
             u.write('[Service]\n')
-            u.write('ExecStartPre=/bin/sleep 100\n')
+            u.write('ExecStartPre=/bin/sleep 10\n')
             u.write('ExecStart=/bin/true')
             self.manager.Reload()
 
