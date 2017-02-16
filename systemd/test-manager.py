@@ -15,28 +15,29 @@ class TestManager(avocado.Test):
         self.unit_file =  '/etc/systemd/system/{0}'.format(self.unit)
 
     def test_AddDependencyUnitFiles(self):
-        target = 'multi-user.target'
+        TARGET = 'multi-user.target'
 
         with open(self.unit_file, 'w') as u:
             u.write('[Service]\n')
             u.write('ExecStart=/bin/true\n')
             self.manager.Reload()
 
-        force = runtime = (True, False)
+        force = (True, False)
+        runtime = (True, False)
         dependency = ('Wants', 'Requires')
-        cases = itertools.product([self.unit], [target], dependency, runtime, force)
+        cases = itertools.product([self.unit], [TARGET], dependency, runtime, force)
 
         for case in cases:
             prefix = '/run' if case[3] else '/etc'
             sufix = case[2].lower()
-            path = '{0}/systemd/system/{1}.{2}/{3}'.format(prefix, target, sufix, self.unit)
+            path = '{0}/systemd/system/{1}.{2}/{3}'.format(prefix, TARGET, sufix, self.unit)
 
             self.log.debug(case)
 
-            symlinks = self.manager.AddDependencyUnitFiles([case[0]], case[1], case[2], case[3], case[4])
-            self.assertEqual(len(symlinks), 1)
+            changes = self.manager.AddDependencyUnitFiles([case[0]], case[1], case[2], case[3], case[4])
+            self.assertEqual(len(changes), 1)
 
-            operation, symlink, target = symlinks[0]
+            operation, symlink, target = changes[0]
 
             self.assertEqual('symlink', operation)
             self.log.debug(path)
