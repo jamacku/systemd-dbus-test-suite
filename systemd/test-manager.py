@@ -101,8 +101,25 @@ class TestManager(avocado.Test):
     # def test_GetDefaultTarget(self):
     #     self.fail()
 
-    # def test_GetJob(self):
-    #     self.fail()
+    def test_GetJob(self):
+        with open(self.unit_file, 'w') as u:
+             u.write('[Service]\n')
+             u.write('ExecStartPre=/bin/sleep 3600\n')
+             u.write('ExecStart=/bin/true')
+
+        self.manager.Reload()
+        self.manager.StartUnit(self.unit, 'replace')
+
+        jobs = self.manager.ListJobs()
+        self.assertEqual(len(jobs), 1)
+
+        job_id = jobs[0][0]
+        expected_job_path = '/org/freedesktop/systemd1/job/{0}'.format(job_id)
+
+        job_path = self.manager.GetJob(job_id)
+        self.assertEqual(job_path, expected_job_path)
+
+        self.manager.StopUnit(self.unit, 'replace')
 
     def test_GetMachineId(self):
         with open('/etc/machine-id', 'r') as f:
