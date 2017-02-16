@@ -3,6 +3,8 @@ from pydbus import SystemBus
 import itertools
 import os
 import subprocess
+import tempfile
+import time
 
 import avocado
 
@@ -13,6 +15,7 @@ class TestManager(avocado.Test):
         self.manager = self.bus.get('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
         self.unit = 'test.service'
         self.unit_file =  '/etc/systemd/system/{0}'.format(self.unit)
+        self.object_path = '/org/freedesktop/systemd1/unit/test_2eservice'
 
     def test_AddDependencyUnitFiles(self):
         TARGET = 'multi-user.target'
@@ -131,8 +134,27 @@ class TestManager(avocado.Test):
     # def test_Get(self):
     #     self.fail()
 
-    # def test_GetUnitByPID(self):
-    #     self.fail()
+    def test_GetUnitByPID(self):
+        temp = tempfile.mktemp()
+        with open(self.unit_file, 'w') as u:
+            u.write('[Service]\n')
+            u.write('ExecStart=/bin/bash -c \'echo $$$$ > ' + temp + '; sleep 3600\'\n')
+        self.manager.Reload()
+
+        job = self.manager.StartUnit(self.unit, 'replace')
+        self.log.debug(job)
+        time.sleep(1)
+
+        with open(temp, 'r') as f:
+            pid = f.readline()
+
+        obj = self.manager.GetUnitByPID(int(pid))
+        self.log.debug(obj)
+        self.assertEqual(obj, self.object_path)
+
+        job = self.manager.StopUnit(self.unit, 'replace')
+        self.log.debug(job)
+        os.remove(temp)
 
     # def test_GetUnitFileState(self):
     #     self.fail()
