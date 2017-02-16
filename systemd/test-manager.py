@@ -54,7 +54,8 @@ class TestManager(avocado.Test):
             u.write('[Service]\n')
             u.write('ExecStartPre=/bin/sleep 10\n')
             u.write('ExecStart=/bin/true')
-            self.manager.Reload()
+
+        self.manager.Reload()
 
         job = self.manager.StartUnit(self.unit, 'replace')
         self.log.debug(job)
