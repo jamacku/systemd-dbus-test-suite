@@ -2,6 +2,7 @@ from pydbus import SystemBus
 
 import itertools
 import os
+import resource
 import subprocess
 import tempfile
 import time
@@ -158,11 +159,9 @@ class TestManager(avocado.Test):
             l = 2 ** 64 - 1
             self.assertEqual(p, l)
 
-        # jsynacek: If there's a good way to read these values instead of hard-coding them, we
-        #           should do that.
-        config = {"DefaultLimitNOFILE": 4096,
-                  "DefaultLimitNPROC": 47201,
-                  "DefaultLimitMEMLOCK": 65536,
+        config = {"DefaultLimitNOFILE": resource.getrlimit(resource.RLIMIT_NOFILE)[1],
+                  "DefaultLimitNPROC": resource.getrlimit(resource.RLIMIT_NPROC)[1],
+                  "DefaultLimitMEMLOCK": resource.getrlimit(resource.RLIMIT_MEMLOCK)[1],
                   "DefaultLimitSIGPENDING": 47201,
                   "DefaultLimitMSGQUEUE": 819200,
                   "DefaultLimitRTPRIO": 0}
