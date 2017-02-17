@@ -179,6 +179,7 @@ class TestManager(avocado.Test):
 
     def test_GetUnitByPID(self):
         temp = tempfile.mktemp()
+        self.cleanup_files += [temp]
         with open(self.unit_file, 'w') as u:
             u.write('[Service]\n')
             u.write('ExecStart=/bin/bash -c \'echo $$$$ > ' + temp + '; sleep 3600\'\n')
@@ -197,7 +198,6 @@ class TestManager(avocado.Test):
 
         job = self.manager.StopUnit(self.unit, 'replace')
         self.log.debug(job)
-        os.remove(temp)
 
     def test_GetUnitFileState(self):
         TARGET = 'multi-user.target'
