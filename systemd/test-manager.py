@@ -276,8 +276,39 @@ class TestManager(avocado.Test):
     # def test_LoadUnit(self):
     #     self.fail()
 
-    # def test_MaskUnitFiles(self):
-    #     self.fail()
+    def test_MaskUnitFiles_UnmaskUnitFiles(self):
+        #we can't mask stuff from /etc
+        unit = 'test2.service'
+        unit_file =  '/usr/lib/systemd/system/{0}'.format(unit)
+        with open(unit_file, 'w') as u:
+             u.write('[Service]\n')
+             u.write('ExecStart=/bin/true\n')
+
+        self.manager.Reload()
+
+        force = (True, False)
+        runtime = (True, False)
+        cases = itertools.product(runtime, force)
+
+        for case in cases:
+            prefix = '/run' if case[0] else '/etc'
+            path = '{0}/systemd/system/{1}'.format(prefix, unit)
+
+            if case[1]:
+                os.symlink("/tmp/foo", path)
+                changes_num = 2
+            else:
+                changes_num = 1
+
+            changes = self.manager.MaskUnitFiles([unit], case[0], case[1])
+            self.assertEqual(len(changes), changes_num)
+            self.assertEqual(os.readlink(path), "/dev/null")
+
+            changes = self.manager.UnmaskUnitFiles([unit], case[0])
+            self.assertEqual(len(changes), 1)
+            self.assertFalse(os.path.islink(path))
+
+        os.remove(unit_file)
 
     def test_Ping(self):
         self.manager.Ping()
@@ -364,9 +395,6 @@ class TestManager(avocado.Test):
     #     self.skip()
 
     # def test_TryRestartUnit(self):
-    #     self.fail()
-
-    # def test_UnmaskUnitFiles(self):
     #     self.fail()
 
     # def test_UnsetAndSetEnvironment(self):
