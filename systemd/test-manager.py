@@ -16,15 +16,15 @@ class TestManager(avocado.Test):
         self.manager = self.bus.get('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
         self.unit = 'test.service'
         self.unit_file =  '/etc/systemd/system/{0}'.format(self.unit)
-        self.object_path = '/org/freedesktop/systemd1/unit/test_2eservice'
-
-    def test_AddDependencyUnitFiles(self):
-        TARGET = 'multi-user.target'
+        self.unit_object_path = '/org/freedesktop/systemd1/unit/test_2eservice'
 
         with open(self.unit_file, 'w') as u:
             u.write('[Service]\n')
-            u.write('ExecStart=/bin/true\n')
-            self.manager.Reload()
+            u.write('ExecStart=/usr/bin/true\n')
+        self.manager.Reload()
+
+    def test_AddDependencyUnitFiles(self):
+        TARGET = 'multi-user.target'
 
         force = (True, False)
         runtime = (True, False)
@@ -188,7 +188,7 @@ class TestManager(avocado.Test):
 
         obj = self.manager.GetUnitByPID(int(pid))
         self.log.debug(obj)
-        self.assertEqual(obj, self.object_path)
+        self.assertEqual(obj, self.unit_object_path)
 
         job = self.manager.StopUnit(self.unit, 'replace')
         self.log.debug(job)
@@ -228,14 +228,9 @@ class TestManager(avocado.Test):
         self.assertEqual(state, 'disabled')
 
     def test_GetUnit(self):
-        unit_body = "[Service]\nExecStart=/usr/bin/true\n"
-        with open(self.unit_file, 'w') as u:
-            u.write(unit_body)
-
-        self.manager.Reload()
         self.manager.StartUnit(self.unit, 'replace')
         o = self.manager.GetUnit(self.unit)
-        self.assertEqual(o, self.object_path)
+        self.assertEqual(o, self.unit_object_path)
 
     # def test_GetUnitProcesses(selfelf):
     #     self.fail()
