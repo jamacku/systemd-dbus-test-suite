@@ -6,6 +6,7 @@ import resource
 import subprocess
 import tempfile
 import time
+import unittest
 
 import avocado
 
@@ -385,3 +386,6 @@ class TestManager(avocado.Test):
             pass
 
         self.manager.Reload()
+
+if __name__ == "__main__":
+    unittest.main()
