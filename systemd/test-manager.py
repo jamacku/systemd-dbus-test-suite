@@ -53,39 +53,41 @@ class TestManager(avocado.Test):
             self.manager.DisableUnitFiles([self.unit], case[3])
 
     # FOLLOWING 2 TEST CASES BREAK F25. UNCOMMENT ONCE WE BACKPORT FIX FOR #4444
-    # def test_CancelJob(self):
-    #     with open(self.unit_file, 'w') as u:
-    #         u.write('[Service]\n')
-    #         u.write('ExecStartPre=/bin/sleep 10\n')
-    #         u.write('ExecStart=/bin/true')
+    def test_CancelJob(self):
+        with open(self.unit_file, 'w') as u:
+            u.write('[Service]\n')
+            u.write('ExecStartPre=/bin/sleep 10\n')
+            u.write('ExecStart=/bin/true')
 
-    #     self.manager.Reload()
+        self.manager.Reload()
 
-    #     job = self.manager.StartUnit(self.unit, 'replace')
-    #     self.log.debug(job)
+        job = self.manager.StartUnit(self.unit, 'replace')
+        self.log.debug(job)
 
-    #     id = int(job.split('/')[-1])
-    #     self.log.debug(id)
+        id = int(job.split('/')[-1])
+        self.log.debug(id)
 
-    #     self.manager.CancelJob(id)
+        self.manager.CancelJob(id)
 
-    #     jobs = self.manager.ListJobs()
-    #     self.log.debug(jobs)
+        jobs = self.manager.ListJobs()
+        self.log.debug(jobs)
 
-    #     self.assertEqual(len(jobs), 0)
+        self.assertEqual(len(jobs), 0)
+        self.manager.StopUnit(self.unit, 'replace')
 
-    # def test_ClearJobs(self):
-    #     with open(self.unit_file, 'w') as u:
-    #         u.write('[Service]\n')
-    #         u.write('ExecStartPre=/bin/sleep 10\n')
-    #         u.write('ExecStart=/bin/true')
-    #         self.manager.Reload()
+    def test_ClearJobs(self):
+        with open(self.unit_file, 'w') as u:
+            u.write('[Service]\n')
+            u.write('ExecStartPre=/bin/sleep 10\n')
+            u.write('ExecStart=/bin/true')
+            self.manager.Reload()
 
-    #     self.manager.StartUnit(self.unit, 'replace')
-    #     self.manager.ClearJobs()
+        self.manager.StartUnit(self.unit, 'replace')
+        self.manager.ClearJobs()
 
-    #     jobs = self.manager.ListJobs()
-    #     self.assertEqual(len(jobs), 0)
+        jobs = self.manager.ListJobs()
+        self.assertEqual(len(jobs), 0)
+        self.manager.StopUnit(self.unit, 'replace')
 
     # def test_DisableUnitFiles(self):
     #     self.fail()
