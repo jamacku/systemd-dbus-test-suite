@@ -13,30 +13,30 @@ from pydbus import SystemBus
 class TestManager(avocado.Test):
     def setUp(self):
         self.bus = SystemBus()
-        self.manager = self.bus.get('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
-        self.unit = 'test.service'
-        self.unit_file = '/etc/systemd/system/{0}'.format(self.unit)
-        self.unit_object_path = '/org/freedesktop/systemd1/unit/test_2eservice'
+        self.manager = self.bus.get("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
+        self.unit = "test.service"
+        self.unit_file = "/etc/systemd/system/{0}".format(self.unit)
+        self.unit_object_path = "/org/freedesktop/systemd1/unit/test_2eservice"
         self.cleanup_files = [self.unit_file]
         self.cleanup_environment = []
 
-        with open(self.unit_file, 'w') as u:
-            u.write('[Service]\n')
-            u.write('ExecStart=/usr/bin/true\n')
+        with open(self.unit_file, "w") as u:
+            u.write("[Service]\n")
+            u.write("ExecStart=/usr/bin/true\n")
         self.manager.Reload()
 
     def test_AddDependencyUnitFiles(self):
-        TARGET = 'multi-user.target'
+        TARGET = "multi-user.target"
 
         force = (True, False)
         runtime = (True, False)
-        dependency = ('Wants', 'Requires')
+        dependency = ("Wants", "Requires")
         cases = itertools.product([self.unit], [TARGET], dependency, runtime, force)
 
         for case in cases:
-            prefix = '/run' if case[3] else '/etc'
+            prefix = "/run" if case[3] else "/etc"
             sufix = case[2].lower()
-            path = '{0}/systemd/system/{1}.{2}/{3}'.format(prefix, TARGET, sufix, self.unit)
+            path = "{0}/systemd/system/{1}.{2}/{3}".format(prefix, TARGET, sufix, self.unit)
 
             self.log.debug(case)
 
@@ -45,7 +45,7 @@ class TestManager(avocado.Test):
 
             operation, symlink, target = changes[0]
 
-            self.assertEqual('symlink', operation)
+            self.assertEqual("symlink", operation)
             self.log.debug(path)
             self.log.debug(symlink)
             self.assertEqual(path, symlink)
@@ -56,17 +56,17 @@ class TestManager(avocado.Test):
 
     # FOLLOWING 2 TEST CASES BREAK F25. UNCOMMENT ONCE WE BACKPORT FIX FOR #4444
     def test_CancelJob(self):
-        with open(self.unit_file, 'w') as u:
-            u.write('[Service]\n')
-            u.write('ExecStartPre=/bin/sleep 10\n')
-            u.write('ExecStart=/bin/true')
+        with open(self.unit_file, "w") as u:
+            u.write("[Service]\n")
+            u.write("ExecStartPre=/bin/sleep 10\n")
+            u.write("ExecStart=/bin/true")
 
         self.manager.Reload()
 
-        job = self.manager.StartUnit(self.unit, 'replace')
+        job = self.manager.StartUnit(self.unit, "replace")
         self.log.debug(job)
 
-        id = int(job.split('/')[-1])
+        id = int(job.split("/")[-1])
         self.log.debug(id)
 
         self.manager.CancelJob(id)
@@ -75,21 +75,21 @@ class TestManager(avocado.Test):
         self.log.debug(jobs)
 
         self.assertEqual(len(jobs), 0)
-        self.manager.StopUnit(self.unit, 'replace')
+        self.manager.StopUnit(self.unit, "replace")
 
     def test_ClearJobs(self):
-        with open(self.unit_file, 'w') as u:
-            u.write('[Service]\n')
-            u.write('ExecStartPre=/bin/sleep 10\n')
-            u.write('ExecStart=/bin/true')
+        with open(self.unit_file, "w") as u:
+            u.write("[Service]\n")
+            u.write("ExecStartPre=/bin/sleep 10\n")
+            u.write("ExecStart=/bin/true")
             self.manager.Reload()
 
-        self.manager.StartUnit(self.unit, 'replace')
+        self.manager.StartUnit(self.unit, "replace")
         self.manager.ClearJobs()
 
         jobs = self.manager.ListJobs()
         self.assertEqual(len(jobs), 0)
-        self.manager.StopUnit(self.unit, 'replace')
+        self.manager.StopUnit(self.unit, "replace")
 
     # def test_DisableUnitFiles(self):
     #     self.fail()
@@ -110,27 +110,27 @@ class TestManager(avocado.Test):
     #     self.fail()
 
     def test_GetJob(self):
-        with open(self.unit_file, 'w') as u:
-             u.write('[Service]\n')
-             u.write('ExecStartPre=/bin/sleep 3600\n')
-             u.write('ExecStart=/bin/true')
+        with open(self.unit_file, "w") as u:
+             u.write("[Service]\n")
+             u.write("ExecStartPre=/bin/sleep 3600\n")
+             u.write("ExecStart=/bin/true")
 
         self.manager.Reload()
-        self.manager.StartUnit(self.unit, 'replace')
+        self.manager.StartUnit(self.unit, "replace")
 
         jobs = self.manager.ListJobs()
         self.assertEqual(len(jobs), 1)
 
         job_id = jobs[0][0]
-        expected_job_path = '/org/freedesktop/systemd1/job/{0}'.format(job_id)
+        expected_job_path = "/org/freedesktop/systemd1/job/{0}".format(job_id)
 
         job_path = self.manager.GetJob(job_id)
         self.assertEqual(job_path, expected_job_path)
 
-        self.manager.StopUnit(self.unit, 'replace')
+        self.manager.StopUnit(self.unit, "replace")
 
     def test_GetMachineId(self):
-        with open('/etc/machine-id', 'r') as f:
+        with open("/etc/machine-id", "r") as f:
             id = f.read().splitlines()[0]
 
         manager_id = self.manager.GetMachineId()
@@ -141,7 +141,7 @@ class TestManager(avocado.Test):
         """
         p = self.manager.Get("org.freedesktop.systemd1.Manager", "Version")
         # Version is the second word on the first line in the output.
-        v = subprocess.check_output(["systemctl", "--version"]).split('\n')[0].split()[1]
+        v = subprocess.check_output(["systemctl", "--version"]).split("\n")[0].split()[1]
         self.assertEqual(p, v)
 
         config = {"LogLevel": "info",
@@ -166,7 +166,7 @@ class TestManager(avocado.Test):
         config = {"DefaultLimitNOFILE": resource.getrlimit(resource.RLIMIT_NOFILE)[1],
                   "DefaultLimitNPROC": resource.getrlimit(resource.RLIMIT_NPROC)[1],
                   "DefaultLimitMEMLOCK": resource.getrlimit(resource.RLIMIT_MEMLOCK)[1],
-                  # The following limits don't have symbolic values in Python 2.7.
+                  # The following limits don"t have symbolic values in Python 2.7.
                   # Use the ones from /usr/include/bits/resource.h.
                   "DefaultLimitSIGPENDING": resource.getrlimit(11)[1],
                   "DefaultLimitMSGQUEUE": resource.getrlimit(12)[1],
@@ -179,62 +179,62 @@ class TestManager(avocado.Test):
     def test_GetUnitByPID(self):
         temp = tempfile.mktemp()
         self.cleanup_files += [temp]
-        with open(self.unit_file, 'w') as u:
-            u.write('[Service]\n')
-            u.write('ExecStart=/bin/bash -c \'echo $$$$ > ' + temp + '; sleep 3600\'\n')
+        with open(self.unit_file, "w") as u:
+            u.write("[Service]\n")
+            u.write("ExecStart=/bin/bash -c \"echo $$$$ > " + temp + "; sleep 3600\"\n")
         self.manager.Reload()
 
-        job = self.manager.StartUnit(self.unit, 'replace')
+        job = self.manager.StartUnit(self.unit, "replace")
         self.log.debug(job)
         time.sleep(1)
 
-        with open(temp, 'r') as f:
+        with open(temp, "r") as f:
             pid = f.readline()
 
         obj = self.manager.GetUnitByPID(int(pid))
         self.log.debug(obj)
         self.assertEqual(obj, self.unit_object_path)
 
-        job = self.manager.StopUnit(self.unit, 'replace')
+        job = self.manager.StopUnit(self.unit, "replace")
         self.log.debug(job)
 
     def test_GetUnitFileState(self):
-        TARGET = 'multi-user.target'
+        TARGET = "multi-user.target"
 
-        with open(self.unit_file, 'w') as u:
-             u.write('[Service]\n')
-             u.write('ExecStart=/bin/true\n')
+        with open(self.unit_file, "w") as u:
+             u.write("[Service]\n")
+             u.write("ExecStart=/bin/true\n")
 
         self.manager.Reload()
 
-        # unit file doesn't have [Install] section, hence it should be marked as static
+        # unit file doesn"t have [Install] section, hence it should be marked as static
         state = self.manager.GetUnitFileState(self.unit)
-        self.assertEqual(state, 'static')
+        self.assertEqual(state, "static")
 
         # after we add wants dependency to multi-user.target it should be marked as enabled
-        self.manager.AddDependencyUnitFiles([self.unit], TARGET, 'Wants', False, False)
+        self.manager.AddDependencyUnitFiles([self.unit], TARGET, "Wants", False, False)
         state = self.manager.GetUnitFileState(self.unit)
-        self.assertEqual(state, 'enabled')
+        self.assertEqual(state, "enabled")
 
         # when we disable the unit, then state should be again static
         self.manager.DisableUnitFiles([self.unit], False)
         state = self.manager.GetUnitFileState(self.unit)
-        self.assertEqual(state, 'static')
+        self.assertEqual(state, "static")
 
-        with open(self.unit_file, 'a') as u:
-             u.write('[Install]\n')
-             u.write('WantedBy=multi-user.target\n')
+        with open(self.unit_file, "a") as u:
+             u.write("[Install]\n")
+             u.write("WantedBy=multi-user.target\n")
 
         self.manager.Reload()
 
         # we added [Install] section but unit file is not enabled
         state = self.manager.GetUnitFileState(self.unit)
-        self.assertEqual(state, 'disabled')
+        self.assertEqual(state, "disabled")
 
     def test_GetUnit(self):
-        with open(self.unit_file, 'w') as u:
-            u.write('[Service]\n')
-            u.write('ExecStart=/bin/sleep 5\n')
+        with open(self.unit_file, "w") as u:
+            u.write("[Service]\n")
+            u.write("ExecStart=/bin/sleep 5\n")
             self.manager.Reload()
 
 
@@ -283,22 +283,22 @@ class TestManager(avocado.Test):
     #     self.fail()
 
     def test_LoadUnit(self):
-        with open(self.unit_file, 'w') as u:
-            u.write('[Service]\n')
-            u.write('ExecStart=/bin/sleep 5\n')
+        with open(self.unit_file, "w") as u:
+            u.write("[Service]\n")
+            u.write("ExecStart=/bin/sleep 5\n")
             self.manager.Reload()
         result = self.manager.LoadUnit(self.unit)
         self.assertEqual(result, self.unit_object_path)
 
 
     def test_MaskUnitFiles_UnmaskUnitFiles(self):
-        #we can't mask stuff from /etc
-        unit = 'test2.service'
-        unit_file =  '/usr/lib/systemd/system/{0}'.format(unit)
+        #we can"t mask stuff from /etc
+        unit = "test2.service"
+        unit_file =  "/usr/lib/systemd/system/{0}".format(unit)
         self.cleanup_files += [unit_file]
-        with open(unit_file, 'w') as u:
-             u.write('[Service]\n')
-             u.write('ExecStart=/bin/true\n')
+        with open(unit_file, "w") as u:
+             u.write("[Service]\n")
+             u.write("ExecStart=/bin/true\n")
 
         self.manager.Reload()
 
@@ -307,8 +307,8 @@ class TestManager(avocado.Test):
         cases = itertools.product(runtime, force)
 
         for case in cases:
-            prefix = '/run' if case[0] else '/etc'
-            path = '{0}/systemd/system/{1}'.format(prefix, unit)
+            prefix = "/run" if case[0] else "/etc"
+            path = "{0}/systemd/system/{1}".format(prefix, unit)
 
             if case[1]:
                 os.symlink("/tmp/foo", path)
@@ -371,16 +371,16 @@ class TestManager(avocado.Test):
 
     def test_RestartUnit(self):
         temporary_file = tempfile.mkstemp()
-        with open(self.unit_file, 'w') as u:
-            u.write('[Service]\n')
-            u.write('ExecStart=/bin/bash /bin/test.sh\n')
-        with open('/bin/test.sh', 'w') as u:
-            u.write('#!/bin/bash\n')
-            u.write('for i in `seq 1 5`;\n')
-            u.write('do\n')
-            u.write('echo -e "Test Message" >>' + temporary_file[1] + '\n')
-            u.write('sleep 100\n')
-            u.write('done\n')
+        with open(self.unit_file, "w") as u:
+            u.write("[Service]\n")
+            u.write("ExecStart=/bin/bash /bin/test.sh\n")
+        with open("/bin/test.sh", "w") as u:
+            u.write("#!/bin/bash\n")
+            u.write("for i in `seq 1 5`;\n")
+            u.write("do\n")
+            u.write("echo -e 'Test Message' >>" + temporary_file[1] + "\n")
+            u.write("sleep 100\n")
+            u.write("done\n")
             self.manager.Reload()
 
         #let the unit write some lines
@@ -388,12 +388,12 @@ class TestManager(avocado.Test):
         time.sleep(5)
 
         #by now, the first line should be written -> restart the unit with new settings
-        with open('/bin/test.sh', 'w') as u:
-            u.write('#!/bin/bash\n')
-            u.write('for i in `seq 1 5`;\n')
-            u.write('do\n')
-            u.write('echo -e "Test Message" >>' + temporary_file[1] + '\n')
-            u.write('done\n')
+        with open("/bin/test.sh", "w") as u:
+            u.write("#!/bin/bash\n")
+            u.write("for i in `seq 1 5`;\n")
+            u.write("do\n")
+            u.write("echo -e 'Test Message' >>" + temporary_file[1] + "\n")
+            u.write("done\n")
             self.manager.Reload()
 
         self.manager.RestartUnit(self.unit, "replace")
@@ -401,7 +401,7 @@ class TestManager(avocado.Test):
         line_count = 0
 
         #Check the number of lines
-        with open(temporary_file[1], 'r') as f:
+        with open(temporary_file[1], "r") as f:
             for _ in f:
                 line_count += 1
 
@@ -420,7 +420,7 @@ class TestManager(avocado.Test):
     def prepare_environment(self):
         """
         Write a testing unit which will dump its environment to a temporary file when started.
-        Return the temporary file's path.
+        Return the temporary file"s path.
         """
         temp = tempfile.mktemp()
         self.cleanup_files += [temp]
@@ -432,23 +432,23 @@ class TestManager(avocado.Test):
 
     def test_SetEnvironment(self):
         """
-        First, get the default manager environment. Safety check that it's visible from the testing
+        First, get the default manager environment. Safety check that it"s visible from the testing
         unit. Set some environment variables and check if they are readable from the testing unit.
         """
         temp = self.prepare_environment()
         self.cleanup_environment += ["FOO", "BOO"]
 
-        # The manager's default environment.
+        # The manager"s default environment.
         env = self.manager.Get("org.freedesktop.systemd1.Manager", "Environment")
 
-        # The unit's environment as pass from the manager.
+        # The unit"s environment as pass from the manager.
         self.manager.StartUnit(self.unit, "replace")
         time.sleep(0.5)
         unit_env = ""
         with open(temp, "r") as t:
             unit_env = t.read().splitlines()
 
-        # All the defaults as retrieved from the manager should be present in the unit's enviroment
+        # All the defaults as retrieved from the manager should be present in the unit"s enviroment
         # without change.
         for assignment in env:
             self.assertTrue(assignment in unit_env)
@@ -459,7 +459,7 @@ class TestManager(avocado.Test):
         self.manager.StartUnit(self.unit, "replace")
         time.sleep(0.5)
 
-        # Now all the defaults plus the set environment should be present in the unit's environment.
+        # Now all the defaults plus the set environment should be present in the unit"s environment.
         unit_env = ""
         with open(temp, "r") as t:
             unit_env = t.read().splitlines()
@@ -521,7 +521,7 @@ class TestManager(avocado.Test):
         for assignment in test_env:
             self.assertTrue(assignment in unit_env)
 
-        self.manager.UnsetEnvironment(['_UNSET_TEST'])
+        self.manager.UnsetEnvironment(["_UNSET_TEST"])
 
         self.manager.StartUnit(self.unit, "replace")
         time.sleep(0.5)
