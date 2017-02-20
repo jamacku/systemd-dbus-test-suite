@@ -15,7 +15,7 @@ class TestManager(avocado.Test):
         self.bus = SystemBus()
         self.manager = self.bus.get('org.freedesktop.systemd1', '/org/freedesktop/systemd1')
         self.unit = 'test.service'
-        self.unit_file =  '/etc/systemd/system/{0}'.format(self.unit)
+        self.unit_file = '/etc/systemd/system/{0}'.format(self.unit)
         self.unit_object_path = '/org/freedesktop/systemd1/unit/test_2eservice'
 
         with open(self.unit_file, 'w') as u:
@@ -324,8 +324,44 @@ class TestManager(avocado.Test):
     # def test_ResetFailedUnit(self):
     #     self.fail()
 
-    # def test_RestartUnit(self):
-    #     self.fail()
+    def test_RestartUnit(self):
+        temporary_file = tempfile.mkstemp()
+        with open(self.unit_file, 'w') as u:
+            u.write('[Service]\n')
+            u.write('ExecStart=/bin/bash /bin/test.sh\n')
+        with open('/bin/test.sh', 'w') as u:
+            u.write('#!/bin/bash\n')
+            u.write('for i in `seq 1 5`;\n')
+            u.write('do\n')
+            u.write('echo -e "Test Message" >>' + temporary_file[1] + '\n')
+            u.write('sleep 100\n')
+            u.write('done\n')
+            self.manager.Reload()
+
+        #let the unit write some lines
+        self.manager.StartUnit(self.unit, "replace")
+        time.sleep(5)
+
+        #by now, the first line should be written -> restart the unit with new settings
+        with open('/bin/test.sh', 'w') as u:
+            u.write('#!/bin/bash\n')
+            u.write('for i in `seq 1 5`;\n')
+            u.write('do\n')
+            u.write('echo -e "Test Message" >>' + temporary_file[1] + '\n')
+            u.write('done\n')
+            self.manager.Reload()
+
+        self.manager.RestartUnit(self.unit, "replace")
+        time.sleep(5)
+        line_count = 0
+
+        #Check the number of lines
+        with open(temporary_file[1], 'r') as f:
+            for _ in f:
+                line_count += 1
+
+        #there should be 5 lines from the RestartUnit plus one line from StartUnit
+        self.assertEqual(6, line_count)
 
     # def test_RevertUnitFiles(self):
     #     self.fail()
