@@ -283,8 +283,14 @@ class TestManager(avocado.Test):
     # def test_ListUnits(self):
     #     self.fail()
 
-    # def test_LoadUnit(self):
-    #     self.fail()
+    def test_LoadUnit(self):
+        with open(self.unit_file, 'w') as u:
+            u.write('[Service]\n')
+            u.write('ExecStart=/bin/sleep 5\n')
+            self.manager.Reload()
+        result = self.manager.LoadUnit(self.unit)
+        self.assertEqual(result, self.unit_object_path)
+
 
     def test_MaskUnitFiles_UnmaskUnitFiles(self):
         #we can't mask stuff from /etc
