@@ -370,43 +370,47 @@ class TestManager(avocado.Test):
     #     self.fail()
 
     def test_RestartUnit(self):
-        temporary_file = tempfile.mkstemp()
+        temp = tempfile.mktemp()
+
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
             u.write("ExecStart=/bin/bash /bin/test.sh\n")
+
         with open("/bin/test.sh", "w") as u:
             u.write("#!/bin/bash\n")
             u.write("for i in `seq 1 5`;\n")
             u.write("do\n")
-            u.write("echo -e 'Test Message' >>" + temporary_file[1] + "\n")
+            u.write("echo -e 'foo' >> " + temp + "\n")
             u.write("sleep 100\n")
             u.write("done\n")
-            self.manager.Reload()
 
-        #let the unit write some lines
+        self.manager.Reload()
+
+        # Let the unit write some lines
         self.manager.StartUnit(self.unit, "replace")
-        time.sleep(5)
+        time.sleep(1)
 
-        #by now, the first line should be written -> restart the unit with new settings
+        # By now, the first line should be written -> restart the unit with new settings
         with open("/bin/test.sh", "w") as u:
             u.write("#!/bin/bash\n")
             u.write("for i in `seq 1 5`;\n")
             u.write("do\n")
-            u.write("echo -e 'Test Message' >>" + temporary_file[1] + "\n")
+            u.write("echo -e 'bar' >> " + temp + "\n")
             u.write("done\n")
-            self.manager.Reload()
+
+        self.manager.Reload()
 
         self.manager.RestartUnit(self.unit, "replace")
-        time.sleep(5)
+        time.sleep(1)
         line_count = 0
 
-        #Check the number of lines
-        with open(temporary_file[1], "r") as f:
+        # Check the number of lines
+        with open(temp, "r") as f:
             for _ in f:
                 line_count += 1
 
-        #there should be 5 lines from the RestartUnit plus one line from StartUnit
-        os.remove(temporary_file[1])
+        # There should be 5 lines from the RestartUnit plus one line from StartUnit
+        os.remove(temp)
         os.remove("/bin/test.sh")
         self.assertEqual(6, line_count)
 
