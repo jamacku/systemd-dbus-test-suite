@@ -6,6 +6,7 @@ import resource
 import subprocess
 import tempfile
 import time
+import unittest
 
 import avocado
 
@@ -17,6 +18,8 @@ class TestManager(avocado.Test):
         self.unit = 'test.service'
         self.unit_file =  '/etc/systemd/system/{0}'.format(self.unit)
         self.unit_object_path = '/org/freedesktop/systemd1/unit/test_2eservice'
+        self.cleanup_files = [self.unit_file]
+        self.cleanup_environment = []
 
         with open(self.unit_file, 'w') as u:
             u.write('[Service]\n')
@@ -176,6 +179,7 @@ class TestManager(avocado.Test):
 
     def test_GetUnitByPID(self):
         temp = tempfile.mktemp()
+        self.cleanup_files += [temp]
         with open(self.unit_file, 'w') as u:
             u.write('[Service]\n')
             u.write('ExecStart=/bin/bash -c \'echo $$$$ > ' + temp + '; sleep 3600\'\n')
@@ -194,7 +198,6 @@ class TestManager(avocado.Test):
 
         job = self.manager.StopUnit(self.unit, 'replace')
         self.log.debug(job)
-        os.remove(temp)
 
     def test_GetUnitFileState(self):
         TARGET = 'multi-user.target'
@@ -333,8 +336,56 @@ class TestManager(avocado.Test):
     # def test_SetDefaultTarget(self):
     #     self.fail()
 
-    # def test_SetEnvironment(self):
-    #     self.fail()
+    def prepare_environment(self):
+        """
+        Write a testing unit which will dump its environment to a temporary file when started.
+        Return the temporary file's path.
+        """
+        temp = tempfile.mktemp()
+        self.cleanup_files += [temp]
+        body = "[Service]\nExecStart=/usr/bin/bash -c '/usr/bin/env > {}'".format(temp)
+        with open(self.unit_file, "w") as u:
+            u.write(body)
+        self.manager.Reload()
+        return temp
+
+    def test_SetEnvironment(self):
+        """
+        First, get the default manager environment. Safety check that it's visible from the testing
+        unit. Set some environment variables and check if they are readable from the testing unit.
+        """
+        temp = self.prepare_environment()
+        self.cleanup_environment += ["FOO", "BOO"]
+
+        # The manager's default environment.
+        env = self.manager.Get("org.freedesktop.systemd1.Manager", "Environment")
+
+        # The unit's environment as pass from the manager.
+        self.manager.StartUnit(self.unit, "replace")
+        time.sleep(0.5)
+        unit_env = ""
+        with open(temp, "r") as t:
+            unit_env = t.read().splitlines()
+
+        # All the defaults as retrieved from the manager should be present in the unit's enviroment
+        # without change.
+        for assignment in env:
+            self.assertTrue(assignment in unit_env)
+
+        test_env = ["FOO=this-is-never-going-to-be-there", "BOO=1234"]
+        self.manager.SetEnvironment(test_env)
+
+        self.manager.StartUnit(self.unit, "replace")
+        time.sleep(0.5)
+
+        # Now all the defaults plus the set environment should be present in the unit's environment.
+        unit_env = ""
+        with open(temp, "r") as t:
+            unit_env = t.read().splitlines()
+        for assignment in env + test_env:
+            self.assertTrue(assignment in unit_env)
+
+        self.manager.SetEnvironment([])
 
     # def test_SetExitCode(self):
     #     self.fail()
@@ -372,16 +423,50 @@ class TestManager(avocado.Test):
     # def test_UnsetAndSetEnvironment(self):
     #     self.fail()
 
-    # def test_UnsetEnvironment(self):
-    #     self.fail()
+    def test_UnsetEnvironment(self):
+        """
+        Set a dummy environment. After safety checking that the dummy environment exists, unset it.
+        """
+        temp = self.prepare_environment()
+        self.cleanup_environment += ["_UNSET_TEST"]
+
+        test_env = ["_UNSET_TEST=unset-me-please"]
+        self.manager.SetEnvironment(test_env)
+
+        self.manager.StartUnit(self.unit, "replace")
+        time.sleep(0.5)
+
+        # Make sure that the test unit sees the set environment.
+        unit_env = ""
+        with open(temp, "r") as t:
+            unit_env = t.read().splitlines()
+        for assignment in test_env:
+            self.assertTrue(assignment in unit_env)
+
+        self.manager.UnsetEnvironment(['_UNSET_TEST'])
+
+        self.manager.StartUnit(self.unit, "replace")
+        time.sleep(0.5)
+        unit_env = ""
+        with open(temp, "r") as t:
+            unit_env = t.read().splitlines()
+
+        self.assertTrue(test_env not in unit_env)
+        self.manager.UnsetEnvironment([])
+
 
     # def test_Unsubscribe(self):
     #     self.fail()
 
     def tearDown(self):
-        try:
-            os.remove(self.unit_file)
-        except OSError:
-            pass
+        for f in self.cleanup_files:
+            try:
+                os.remove(f)
+            except OSError:
+                pass
 
+        self.manager.UnsetEnvironment(self.cleanup_environment)
         self.manager.Reload()
+
+if __name__ == "__main__":
+    unittest.main()
