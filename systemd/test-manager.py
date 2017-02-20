@@ -1,5 +1,3 @@
-from pydbus import SystemBus
-
 import itertools
 import os
 import resource
@@ -10,6 +8,7 @@ import unittest
 
 import avocado
 
+from pydbus import SystemBus
 
 class TestManager(avocado.Test):
     def setUp(self):
