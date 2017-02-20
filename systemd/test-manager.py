@@ -296,6 +296,7 @@ class TestManager(avocado.Test):
         #we can't mask stuff from /etc
         unit = 'test2.service'
         unit_file =  '/usr/lib/systemd/system/{0}'.format(unit)
+        self.cleanup_files += [unit_file]
         with open(unit_file, 'w') as u:
              u.write('[Service]\n')
              u.write('ExecStart=/bin/true\n')
@@ -323,8 +324,6 @@ class TestManager(avocado.Test):
             changes = self.manager.UnmaskUnitFiles([unit], case[0])
             self.assertEqual(len(changes), 1)
             self.assertFalse(os.path.islink(path))
-
-        os.remove(unit_file)
 
     def test_Ping(self):
         self.manager.Ping()
@@ -546,6 +545,11 @@ class TestManager(avocado.Test):
                 pass
 
         self.manager.UnsetEnvironment(self.cleanup_environment)
+        try:
+            self.manager.StopUnit(self.unit, "replace")
+            time.sleep(0.25)
+        except:
+            pass
         self.manager.Reload()
 
 if __name__ == "__main__":
