@@ -361,7 +361,10 @@ class TestManager(avocado.Test):
                 line_count += 1
 
         #there should be 5 lines from the RestartUnit plus one line from StartUnit
+        os.remove(temporary_file[1])
+        os.remove("/bin/test.sh")
         self.assertEqual(6, line_count)
+
 
     # def test_RevertUnitFiles(self):
     #     self.fail()
