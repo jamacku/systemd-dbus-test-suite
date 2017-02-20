@@ -233,9 +233,16 @@ class TestManager(avocado.Test):
         self.assertEqual(state, 'disabled')
 
     def test_GetUnit(self):
-        self.manager.StartUnit(self.unit, 'replace')
-        o = self.manager.GetUnit(self.unit)
-        self.assertEqual(o, self.unit_object_path)
+        with open(self.unit_file, 'w') as u:
+            u.write('[Service]\n')
+            u.write('ExecStart=/bin/sleep 5\n')
+            self.manager.Reload()
+
+
+        self.manager.StartUnit(self.unit, "replace")
+        result = self.manager.GetUnit(self.unit)
+        self.assertEqual(result, self.unit_object_path)
+
 
     # def test_GetUnitProcesses(selfelf):
     #     self.fail()
