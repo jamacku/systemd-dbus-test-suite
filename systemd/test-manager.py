@@ -292,7 +292,7 @@ class TestManager(avocado.Test):
 
 
     def test_MaskUnitFiles_UnmaskUnitFiles(self):
-        #we can"t mask stuff from /etc
+        # We can't mask stuff from /etc
         unit = "test2.service"
         unit_file =  "/usr/lib/systemd/system/{0}".format(unit)
         self.cleanup_files += [unit_file]
