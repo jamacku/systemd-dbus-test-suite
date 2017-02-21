@@ -65,10 +65,10 @@ class TestManager(avocado.Test):
         job = self.manager.StartUnit(self.unit, "replace")
         self.log.debug(job)
 
-        id = int(job.split("/")[-1])
-        self.log.debug(id)
+        job_id = int(job.split("/")[-1])
+        self.log.debug(job_id)
 
-        self.manager.CancelJob(id)
+        self.manager.CancelJob(job_id)
 
         jobs = self.manager.ListJobs()
         self.log.debug(jobs)
