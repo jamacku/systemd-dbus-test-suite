@@ -408,8 +408,8 @@ class TestManager(avocado.Test):
         self.assertEqual(2, line_count_1)
         self.assertEqual(1, line_count_2)
         self.manager.StopUnit(self.unit, "replace")
-        self.cleanup_files+=[temporary_file_1]
-        self.cleanup_files+=[temporary_file_2]
+        self.cleanup_files += [temporary_file_1]
+        self.cleanup_files += [temporary_file_2]
 
     # def test_RevertUnitFiles(self):
     #     self.fail()
