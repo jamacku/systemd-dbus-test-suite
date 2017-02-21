@@ -369,49 +369,50 @@ class TestManager(avocado.Test):
     #     self.fail()
 
     def test_RestartUnit(self):
-        temp = tempfile.mktemp()
-
+        temporary_file_1 = tempfile.mktemp()
+        temporary_file_2 = tempfile.mktemp()
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
-            u.write("ExecStart=/bin/bash /bin/test.sh\n")
-
-        with open("/bin/test.sh", "w") as u:
-            u.write("#!/bin/bash\n")
-            u.write("for i in `seq 1 5`;\n")
-            u.write("do\n")
-            u.write("echo -e 'foo' >> " + temp + "\n")
-            u.write("sleep 100\n")
-            u.write("done\n")
-
+            u.write("Type=oneshot\n")
+            u.write("RemainAfterExit=True\n")
+            u.write("ExecStart=/bin/bash -c \'echo \"Unit has started\" >> " + temporary_file_1 + "\'\n")
+            u.write("ExecStop=/bin/bash -c \'echo \"Unit has finished\" >> " + temporary_file_2 + "\'\n")
         self.manager.Reload()
 
-        # Let the unit write some lines
-        self.manager.StartUnit(self.unit, "replace")
+        #let the unit write some lines
+        self.manager.RestartUnit(self.unit, "replace")
         time.sleep(1)
+        line_count_1 = 0
+        with open(temporary_file_1, "r") as f:
+            for _ in f:
+                line_count_1 += 1
 
-        # By now, the first line should be written -> restart the unit with new settings
-        with open("/bin/test.sh", "w") as u:
-            u.write("#!/bin/bash\n")
-            u.write("for i in `seq 1 5`;\n")
-            u.write("do\n")
-            u.write("echo -e 'bar' >> " + temp + "\n")
-            u.write("done\n")
+        line_count_2 = 0
 
-        self.manager.Reload()
+
+        self.assertEqual(1, line_count_1)
+        self.assertTrue(not os.path.exists(temporary_file_2))
 
         self.manager.RestartUnit(self.unit, "replace")
         time.sleep(1)
-        line_count = 0
-
-        # Check the number of lines
-        with open(temp, "r") as f:
+        line_count_1 = 0
+        with open(temporary_file_1, "r") as f:
             for _ in f:
-                line_count += 1
+                line_count_1 += 1
 
-        # There should be 5 lines from the RestartUnit plus one line from StartUnit
-        os.remove(temp)
-        os.remove("/bin/test.sh")
-        self.assertEqual(6, line_count)
+        line_count_2 = 0
+        with open(temporary_file_2, "r") as f:
+            for _ in f:
+                line_count_2 += 1
+
+        self.assertEqual(2, line_count_1)
+        self.assertEqual(1, line_count_2)
+        self.manager.StopUnit(self.unit, "replace")
+        self.cleanup_files+=[temporary_file_1]
+        self.cleanup_files+=[temporary_file_2]
+
+
+
 
 
     # def test_RevertUnitFiles(self):
