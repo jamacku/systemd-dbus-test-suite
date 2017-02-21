@@ -371,6 +371,10 @@ class TestManager(avocado.Test):
     def test_RestartUnit(self):
         temporary_file_1 = tempfile.mktemp()
         temporary_file_2 = tempfile.mktemp()
+
+        self.cleanup_files += [temporary_file_1]
+        self.cleanup_files += [temporary_file_2]
+
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
             u.write("Type=oneshot\n")
@@ -406,9 +410,6 @@ class TestManager(avocado.Test):
                 count += 1
 
         self.assertEqual(1, count)
-        self.manager.StopUnit(self.unit, "replace")
-        self.cleanup_files += [temporary_file_1]
-        self.cleanup_files += [temporary_file_2]
 
     # def test_RevertUnitFiles(self):
     #     self.fail()
