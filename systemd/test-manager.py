@@ -382,31 +382,30 @@ class TestManager(avocado.Test):
         # Let the unit write some lines
         self.manager.RestartUnit(self.unit, "replace")
         time.sleep(1)
-        line_count_1 = 0
+        count = 0
         with open(temporary_file_1, "r") as f:
             for _ in f:
-                line_count_1 += 1
+                count += 1
 
-        line_count_2 = 0
-
-
-        self.assertEqual(1, line_count_1)
+        self.assertEqual(1, count)
         self.assertTrue(not os.path.exists(temporary_file_2))
 
         self.manager.RestartUnit(self.unit, "replace")
         time.sleep(1)
-        line_count_1 = 0
+
+        count = 0
         with open(temporary_file_1, "r") as f:
             for _ in f:
-                line_count_1 += 1
+                count += 1
 
-        line_count_2 = 0
+        self.assertEqual(2, count)
+
+        count = 0
         with open(temporary_file_2, "r") as f:
             for _ in f:
-                line_count_2 += 1
+                count += 1
 
-        self.assertEqual(2, line_count_1)
-        self.assertEqual(1, line_count_2)
+        self.assertEqual(1, count)
         self.manager.StopUnit(self.unit, "replace")
         self.cleanup_files += [temporary_file_1]
         self.cleanup_files += [temporary_file_2]
