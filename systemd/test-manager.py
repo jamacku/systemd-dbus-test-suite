@@ -54,7 +54,6 @@ class TestManager(avocado.Test):
 
             self.manager.DisableUnitFiles([self.unit], case[3])
 
-    # FOLLOWING 2 TEST CASES BREAK F25. UNCOMMENT ONCE WE BACKPORT FIX FOR #4444
     def test_CancelJob(self):
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
