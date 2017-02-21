@@ -541,6 +541,12 @@ class TestManager(avocado.Test):
     #     self.fail()
 
     def tearDown(self):
+        try:
+            self.manager.StopUnit(self.unit, "replace")
+            time.sleep(0.25)
+        except:
+            pass
+
         for f in self.cleanup_files:
             try:
                 os.remove(f)
@@ -548,11 +554,6 @@ class TestManager(avocado.Test):
                 pass
 
         self.manager.UnsetEnvironment(self.cleanup_environment)
-        try:
-            self.manager.StopUnit(self.unit, "replace")
-            time.sleep(0.25)
-        except:
-            pass
         self.manager.Reload()
 
 if __name__ == "__main__":
