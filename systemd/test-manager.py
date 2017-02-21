@@ -379,7 +379,7 @@ class TestManager(avocado.Test):
             u.write("ExecStop=/bin/bash -c \'echo \"Unit has finished\" >> " + temporary_file_2 + "\'\n")
         self.manager.Reload()
 
-        #let the unit write some lines
+        # Let the unit write some lines
         self.manager.RestartUnit(self.unit, "replace")
         time.sleep(1)
         line_count_1 = 0
