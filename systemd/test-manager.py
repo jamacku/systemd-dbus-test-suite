@@ -399,15 +399,14 @@ class TestManager(avocado.Test):
         temporary_file_1 = tempfile.mktemp()
         temporary_file_2 = tempfile.mktemp()
 
-        self.cleanup_files += [temporary_file_1]
-        self.cleanup_files += [temporary_file_2]
+        self.cleanup_files += [temporary_file_1, temporary_file_2]
 
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
             u.write("Type=oneshot\n")
             u.write("RemainAfterExit=True\n")
-            u.write("ExecStart=/bin/bash -c \'echo \"Unit has started\" >> " + temporary_file_1 + "\'\n")
-            u.write("ExecStop=/bin/bash -c \'echo \"Unit has finished\" >> " + temporary_file_2 + "\'\n")
+            u.write("ExecStart=/bin/bash -c 'echo \"Unit has started\" >> " + temporary_file_1 + "'\n")
+            u.write("ExecStop=/bin/bash -c 'echo \"Unit has finished\" >> " + temporary_file_2 + "'\n")
         self.manager.Reload()
 
         # Let the unit write some lines
