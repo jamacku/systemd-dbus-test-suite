@@ -14,17 +14,34 @@ class TestManager(avocado.Test):
     def setUp(self):
         self.bus = SystemBus()
         self.manager = self.bus.get("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
-        self.unit = "test.service"
-        self.unit_file = "/etc/systemd/system/{0}".format(self.unit)
-        self.unit_object_path = "/org/freedesktop/systemd1/unit/test_2eservice"
-        self.cleanup_files = [self.unit_file]
+        self.cleanup_files = []
         self.cleanup_environment = []
 
-        with open(self.unit_file, "w") as u:
-            u.write("[Service]\n")
-            u.write("ExecStart=/usr/bin/true\n")
-        self.manager.Reload()
+    def precreate_unit_file(func):
+        """
+        Decorate selected methods. The decorated methods will create a simple unit file according to
+        their name.
 
+        For example, a method called 'test_SetEnvironment' will get a unit file called
+        'testSetEnvironment.service'.
+        """
+        def wrapper(self):
+            name = func.__name__[len("test_"):]
+            self.unit = "test{}.service".format(name)
+            self.unit_file = "/etc/systemd/system/{0}".format(self.unit)
+            self.unit_object_path = "/org/freedesktop/systemd1/unit/test{}_2eservice".format(name)
+            self.cleanup_files = [self.unit_file]
+
+            with open(self.unit_file, "w") as u:
+                u.write("[Service]\n")
+                u.write("ExecStart=/usr/bin/true\n")
+            self.manager.Reload()
+
+            func(self)
+
+        return wrapper
+
+    @precreate_unit_file
     def test_AddDependencyUnitFiles(self):
         TARGET = "multi-user.target"
 
@@ -54,6 +71,7 @@ class TestManager(avocado.Test):
 
             self.manager.DisableUnitFiles([self.unit], case[3])
 
+    @precreate_unit_file
     def test_CancelJob(self):
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
@@ -76,6 +94,7 @@ class TestManager(avocado.Test):
         self.assertEqual(len(jobs), 0)
         self.manager.StopUnit(self.unit, "replace")
 
+    @precreate_unit_file
     def test_ClearJobs(self):
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
@@ -108,6 +127,7 @@ class TestManager(avocado.Test):
     # def test_GetDefaultTarget(self):
     #     self.fail()
 
+    @precreate_unit_file
     def test_GetJob(self):
         with open(self.unit_file, "w") as u:
              u.write("[Service]\n")
@@ -135,6 +155,7 @@ class TestManager(avocado.Test):
         manager_id = self.manager.GetMachineId()
         self.assertEqual(id, manager_id)
 
+    @precreate_unit_file
     def test_Get(self):
         """ Test Get() on basic manager properties.
         """
@@ -175,6 +196,7 @@ class TestManager(avocado.Test):
             self.assertEqual(p, val)
 
 
+    @precreate_unit_file
     def test_GetUnitByPID(self):
         temp = tempfile.mktemp()
         self.cleanup_files += [temp]
@@ -197,6 +219,7 @@ class TestManager(avocado.Test):
         job = self.manager.StopUnit(self.unit, "replace")
         self.log.debug(job)
 
+    @precreate_unit_file
     def test_GetUnitFileState(self):
         TARGET = "multi-user.target"
 
@@ -230,6 +253,7 @@ class TestManager(avocado.Test):
         state = self.manager.GetUnitFileState(self.unit)
         self.assertEqual(state, "disabled")
 
+    @precreate_unit_file
     def test_GetUnit(self):
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
@@ -281,6 +305,7 @@ class TestManager(avocado.Test):
     # def test_ListUnits(self):
     #     self.fail()
 
+    @precreate_unit_file
     def test_LoadUnit(self):
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
@@ -290,6 +315,7 @@ class TestManager(avocado.Test):
         self.assertEqual(result, self.unit_object_path)
 
 
+    @precreate_unit_file
     def test_MaskUnitFiles_UnmaskUnitFiles(self):
         # We can't mask stuff from /etc
         unit = "test2.service"
@@ -368,19 +394,19 @@ class TestManager(avocado.Test):
     # def test_ResetFailedUnit(self):
     #     self.fail()
 
+    @precreate_unit_file
     def test_RestartUnit(self):
         temporary_file_1 = tempfile.mktemp()
         temporary_file_2 = tempfile.mktemp()
 
-        self.cleanup_files += [temporary_file_1]
-        self.cleanup_files += [temporary_file_2]
+        self.cleanup_files += [temporary_file_1, temporary_file_2]
 
         with open(self.unit_file, "w") as u:
             u.write("[Service]\n")
             u.write("Type=oneshot\n")
             u.write("RemainAfterExit=True\n")
-            u.write("ExecStart=/bin/bash -c \'echo \"Unit has started\" >> " + temporary_file_1 + "\'\n")
-            u.write("ExecStop=/bin/bash -c \'echo \"Unit has finished\" >> " + temporary_file_2 + "\'\n")
+            u.write("ExecStart=/bin/bash -c 'echo \"Unit has started\" >> " + temporary_file_1 + "'\n")
+            u.write("ExecStop=/bin/bash -c 'echo \"Unit has finished\" >> " + temporary_file_2 + "'\n")
         self.manager.Reload()
 
         # Let the unit write some lines
@@ -430,6 +456,7 @@ class TestManager(avocado.Test):
         self.manager.Reload()
         return temp
 
+    @precreate_unit_file
     def test_SetEnvironment(self):
         """
         First, get the default manager environment. Safety check that it"s visible from the testing
@@ -559,6 +586,7 @@ class TestManager(avocado.Test):
     # def test_UnsetAndSetEnvironment(self):
     #     self.fail()
 
+    @precreate_unit_file
     def test_UnsetEnvironment(self):
         """
         Set a dummy environment. After safety checking that the dummy environment exists, unset it.
