@@ -480,8 +480,66 @@ class TestManager(avocado.Test):
     # def test_StartTransientUnit(self):
     #     self.fail()
 
-    # def test_StartUnit(self):
-    #     self.fail()
+    def test_StartUnit(self):
+        temporary_file_1 = tempfile.mktemp()
+        temporary_file_2 = tempfile.mktemp()
+
+        self.cleanup_files += [temporary_file_1]
+        self.cleanup_files += [temporary_file_2]
+
+        with open(self.unit_file, "w") as u:
+            u.write("[Service]\n")
+            u.write("Type=Simple\n")
+            u.write("ExecStart=/bin/bash -c \'echo \"Unit has started\" >> " + temporary_file_1 + "\'\n")
+            u.write("ExecStop=/bin/bash -c \'echo \"Unit has finished\" >> " + temporary_file_2 + "\'\n")
+        self.manager.Reload()
+
+        # Check whether the unit starts...
+        self.manager.StartUnit(self.unit, "replace")
+        time.sleep(1)
+        count = 0
+        with open(temporary_file_1, "r") as f:
+            for _ in f:
+                count += 1
+        self.assertEqual(1, count)
+
+        # ...and stops
+        count = 0
+        with open(temporary_file_2, "r") as f:
+            for _ in f:
+                count += 1
+
+        self.assertEqual(1, count)
+
+        # Change the unit to oneshot with set RemainAfterExit
+        with open(self.unit_file, "w") as u:
+            u.write("[Service]\n")
+            u.write("Type=Oneshot\n")
+            u.write("RemainAfterExit=True\n")
+            u.write("ExecStart=/bin/bash -c \'echo \"Unit has started\" >> " + temporary_file_1 + "\'\n")
+            u.write("ExecStop=/bin/bash -c \'echo \"Unit has finished\" >> " + temporary_file_2 + "\'\n")
+        self.manager.Reload()
+
+        # The unit should be started again
+        self.manager.StartUnit(self.unit, "replace")
+        time.sleep(1)
+
+        # The unit is still running -> this start should be ignored
+        self.manager.StartUnit(self.unit, "replace")
+        time.sleep(1)
+
+        count = 0
+        with open(temporary_file_1, "r") as f:
+            for _ in f:
+                count += 1
+
+        # The unit was started twice and finished once
+        self.assertEqual(2, count)
+        count = 0
+        with open(temporary_file_2, "r") as f:
+            for _ in f:
+                count += 1
+        self.assertEqual(1, count)
 
     # def test_StartUnitReplace(self):
     #     self.fail()
