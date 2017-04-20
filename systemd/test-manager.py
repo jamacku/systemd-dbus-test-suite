@@ -507,6 +507,7 @@ class TestManager(avocado.Test):
     # def test_StartTransientUnit(self):
     #     self.fail()
 
+    @precreate_unit_file
     def test_StartUnit(self):
         temporary_file_1 = tempfile.mktemp()
         temporary_file_2 = tempfile.mktemp()
