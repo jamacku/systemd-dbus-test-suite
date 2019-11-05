@@ -20,7 +20,7 @@ USER testmaster
 WORKDIR /testsuite
 
 # Install requirements
-COPY setup-usr-env.sh.sh /testsuite/setup-usr-env.sh
+COPY setup-usr-env.sh /testsuite/setup-usr-env.sh
 CMD ["bash", "setup-usr-env.sh"]
 
 # Copy testsuite source code
